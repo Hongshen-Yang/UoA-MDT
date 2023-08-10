@@ -11,19 +11,30 @@ from binance.websocket.spot.websocket_stream import SpotWebsocketStreamClient
 config_logging(logging, logging.DEBUG)
 
 def on_close(_):
+    conn.close()
     logging.info("connection is closed")
 
 def message_handler(_, message):
     mes = json.loads(message)
-    logging.info(mes)
-    # if mes['k']['x']==True:
-    #     # insert_query = '''
-    #     # INSERT INTO kline (start_time, close_time, symbol, interval, first_id, last_id, open, close, high, low,
-    #     # base_vol, num_trades, closed, quote_vol, taker_base_vol, taker_quote_vol, ignore)
-    #     # VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    #     # '''
-    #     # cursor.execute(insert_query, tuple(mes['k'].values()))
-    #     logging.info(mes['k'])
+    
+    if 'k' in mes:
+        if mes['k']['x']==True:
+
+            conn = sqlite3.connect('sqlite.db')
+            cursor = conn.cursor()
+
+            insert_query = '''
+            INSERT INTO kline (start_time, close_time, symbol, interval, first_id, last_id, open, close, high, low,
+            base_vol, num_trades, closed, quote_vol, taker_base_vol, taker_quote_vol, ignore)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            '''
+            conn.execute(insert_query, tuple(mes['k'].values()))
+            conn.commit()
+            conn.close()
+
+            logging.info(mes['k'])
+    else:
+        logging.info(mes)
 
 # Base API endpoint "wss://ws-api.binance.com:443/ws-api/v3"
 # Testnet API endpoint "wss://testnet.binance.vision/ws-api/v3"
