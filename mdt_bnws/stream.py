@@ -43,34 +43,22 @@ def message_handler(_, message):
 
 def client_stream():
 
-    conn = sqlite3.connect('sqlite.db')
-    cursor = conn.cursor()
+    my_client = SpotWebsocketStreamClient(
+        stream_url="wss://stream.binance.com:443",
+        on_message=message_handler,
+        on_close=on_close
+    )
 
-    try:
-        my_client = SpotWebsocketStreamClient(
-            stream_url="wss://stream.binance.com:443",
-            on_message=message_handler,
-            on_close=on_close
-        )
+    # Response can be found
+    # https://github.com/binance/binance-spot-api-docs/blob/master/user-data-stream.md
 
-        # Response can be found
-        # https://github.com/binance/binance-spot-api-docs/blob/master/user-data-stream.md
-
-        # my_client.agg_trade(symbol="btcusdt")
-        # my_client.book_ticker(symbol="btcusdt")
-        # my_client.diff_book_depth(symbol="btcusdt", speed=1000)
-        # my_client.rolling_window_ticker("BNBUSDT", "1h")
-        my_client.kline(symbol="btcusdt", interval="1m")
-        # my_client.trade(symbol="btcusdt")
-        # my_client.ticker(symbol="btcusdt")
-        
-    except Exception as e:
-        logging.error("An error occurred:", e)
-
-    finally:
-        # Commit changes and close the connection
-        conn.commit()
-        conn.close()
+    # my_client.agg_trade(symbol="btcusdt")
+    # my_client.book_ticker(symbol="btcusdt")
+    # my_client.diff_book_depth(symbol="btcusdt", speed=1000)
+    # my_client.rolling_window_ticker("BNBUSDT", "1h")
+    my_client.kline(symbol="btcusdt", interval="1s")
+    # my_client.trade(symbol="btcusdt")
+    # my_client.ticker(symbol="btcusdt")
 
 if __name__ == "__main__":
     client_stream()

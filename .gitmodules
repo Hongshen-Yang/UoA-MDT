@@ -1,3 +1,6 @@
 [submodule "mdt_utils/binance-public-data"]
 	path = mdt_utils/binance-public-data
 	url = https://github.com/binance/binance-public-data
+[submodule "mdt_utils/FinRL"]
+	path = mdt_utils/FinRL
+	url = https://github.com/AI4Finance-Foundation/FinRL
