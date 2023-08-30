@@ -41,7 +41,7 @@ def message_handler(_, message):
 # Base stream wss://stream.binance.com:9443 or wss://stream.binance.com:443
 # Testnet stream endpoint "wss://testnet.binance.vision"
 
-def client_stream():
+def client_stream(itvl='1s'):
 
     my_client = SpotWebsocketStreamClient(
         stream_url="wss://stream.binance.com:443",
@@ -56,7 +56,7 @@ def client_stream():
     # my_client.book_ticker(symbol="btcusdt")
     # my_client.diff_book_depth(symbol="btcusdt", speed=1000)
     # my_client.rolling_window_ticker("BNBUSDT", "1h")
-    my_client.kline(symbol="btcusdt", interval="1s")
+    my_client.kline(symbol="btcusdt", interval=itvl)
     # my_client.trade(symbol="btcusdt")
     # my_client.ticker(symbol="btcusdt")
 

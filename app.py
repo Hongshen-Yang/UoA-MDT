@@ -14,7 +14,7 @@ async def clear_db():
 async def main():
     api_key, api_secret = get_api_key()
     await clear_db()
-    client_stream()
+    client_stream(itvl='1s')
 
 if __name__ == "__main__":
     asyncio.run(main())
