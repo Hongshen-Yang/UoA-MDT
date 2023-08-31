@@ -24,7 +24,7 @@ class StockTradingEnv(gym.Env):
         self,
         df: pd.DataFrame,
         stock_dim: int,
-        hmax: int,
+        hmax: float,
         initial_amount: int,
         num_stock_shares: list[int],
         buy_cost_pct: list[float],
@@ -139,25 +139,26 @@ class StockTradingEnv(gym.Env):
                 if self.state[index + 1] > 0:
                     # Sell only if the price is > 0 (no missing data in this particular date)
                     # if turbulence goes over threshold, just clear out all positions
-                    if True: #| self.state[index + self.stock_dim + 1] > 0:
-                        # Sell only if current asset is > 0. For pair trading, we enable short position, so we can sell even if we don't have the stock
-                        sell_num_shares = self.state[index + self.stock_dim + 1]
-                        sell_amount = (
-                            self.state[index + 1]
-                            * sell_num_shares
-                            * (1 - self.sell_cost_pct[index])
-                        )
-                        # update balance
-                        self.state[0] += sell_amount
-                        self.state[index + self.stock_dim + 1] = 0
-                        self.cost += (
-                            self.state[index + 1]
-                            * sell_num_shares
-                            * self.sell_cost_pct[index]
-                        )
-                        self.trades += 1
-                    else:
-                        sell_num_shares = 0
+                    pass
+                    # if self.state[index + self.stock_dim + 1] > 0:
+                    #     # Sell only if current asset is > 0. For pair trading, we enable short position, so we can sell even if we don't have the stock
+                    #     sell_num_shares = self.state[index + self.stock_dim + 1]
+                    #     sell_amount = (
+                    #         self.state[index + 1]
+                    #         * sell_num_shares
+                    #         * (1 - self.sell_cost_pct[index])
+                    #     )
+                    #     # update balance
+                    #     self.state[0] += sell_amount
+                    #     self.state[index + self.stock_dim + 1] = 0
+                    #     self.cost += (
+                    #         self.state[index + 1]
+                    #         * sell_num_shares
+                    #         * self.sell_cost_pct[index]
+                    #     )
+                    #     self.trades += 1
+                    # else:
+                    #     sell_num_shares = 0
                 else:
                     sell_num_shares = 0
             else:
@@ -174,7 +175,7 @@ class StockTradingEnv(gym.Env):
             ):  # check if the stock is able to buy
                 # if self.state[index + 1] >0:
                 # Buy only if the price is > 0 (no missing data in this particular date)
-                available_amount = self.state[0] // (
+                available_amount = self.state[0] / (
                     self.state[index + 1] * (1 + self.buy_cost_pct[index])
                 )  # when buying stocks, we should consider the cost of trading when calculating available_amount, or we may be have cash<0
                 # print('available_amount:{}'.format(available_amount))
@@ -322,13 +323,13 @@ class StockTradingEnv(gym.Env):
             buy_index = argsort_actions[::-1][: np.where(actions > 0)[0].shape[0]]
 
             for index in sell_index:
-                # Always buy ＆ sell in a pair
-                actions[index] = self._sell_stock(index, actions[index]) * (-1)
-                # if 1 is in sell, the buy 0, vice versa
+                # We always need to buy first, to get how much we actually can afford, then sell based on the amount we bought
                 actions[1-index] = self._buy_stock(1-index, self.state[index+1]/self.state[2-index]*actions[index])
+                actions[index] = self._sell_stock(index, self.state[2-index]/self.state[index+1]*actions[1-index]) * (-1)
+                # if 1 is in sell, the buy 0, vice versa
 
             for index in buy_index:
-                # Always buy & sell in a pair
+                # Always buy first, because there is a limitation on buy amount
                 actions[index] = self._buy_stock(index, actions[index])
                 # if 1 is in buy, then sell 0, vice versa
                 actions[1-index] = self._sell_stock(1-index, self.state[index+1]/self.state[2-index]*actions[index]) * (-1)
