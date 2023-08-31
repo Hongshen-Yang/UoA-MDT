@@ -46,7 +46,7 @@ class StockTradingEnv(gym.Env):
     ):
         self.day = day
         self.df = df
-        self.stock_dim = stock_dim
+        self.stock_dim = 2
         self.hmax = hmax
         self.num_stock_shares = num_stock_shares
         self.initial_amount = initial_amount  # get the initial cash
@@ -106,8 +106,8 @@ class StockTradingEnv(gym.Env):
                 # if self.state[index + 1] > 0: # if we use price<0 to denote a stock is unable to trade in that day, the total asset calculation may be wrong for the price is unreasonable
                 # Sell only if the price is > 0 (no missing data in this particular date)
                 # perform sell action based on the sign of the action
-                if self.state[index + self.stock_dim + 1] > 0:
-                    # Sell only if current asset is > 0
+                if True: #| self.state[index + self.stock_dim + 1] > 0:
+                    # Sell only if current asset is > 0. For pair trading, we enable short position, so we can sell even if we don't have the stock
                     sell_num_shares = min(
                         abs(action), self.state[index + self.stock_dim + 1]
                     )
@@ -139,8 +139,8 @@ class StockTradingEnv(gym.Env):
                 if self.state[index + 1] > 0:
                     # Sell only if the price is > 0 (no missing data in this particular date)
                     # if turbulence goes over threshold, just clear out all positions
-                    if self.state[index + self.stock_dim + 1] > 0:
-                        # Sell only if current asset is > 0
+                    if True: #| self.state[index + self.stock_dim + 1] > 0:
+                        # Sell only if current asset is > 0. For pair trading, we enable short position, so we can sell even if we don't have the stock
                         sell_num_shares = self.state[index + self.stock_dim + 1]
                         sell_amount = (
                             self.state[index + 1]
@@ -299,33 +299,39 @@ class StockTradingEnv(gym.Env):
             return self.state, self.reward, self.terminal, False, {}
 
         else:
+            # The action_space is set to 1
             actions = actions * self.hmax  # actions initially is scaled between 0 to 1
             actions = actions.astype(
-                int
-            )  # convert into integer because we can't by fraction of shares
-            if self.turbulence_threshold is not None:
-                if self.turbulence >= self.turbulence_threshold:
-                    actions = np.array([-self.hmax] * self.stock_dim)
+                float
+            )  # it is allowed to buy a fraction of crypto
+
+            # We don't need to consider turbulence because we are pair trading
+            # if self.turbulence_threshold is not None:
+            #     if self.turbulence >= self.turbulence_threshold:
+            #         actions = np.array([-self.hmax] * self.stock_dim)
+
             begin_total_asset = self.state[0] + sum(
                 np.array(self.state[1 : (self.stock_dim + 1)])
                 * np.array(self.state[(self.stock_dim + 1) : (self.stock_dim * 2 + 1)])
-            )
+            ) # calculate the total worth of assets
             # print("begin_total_asset:{}".format(begin_total_asset))
 
             argsort_actions = np.argsort(actions)
+            # In our case there should be only one action, so no need for index. But we keep it for now
             sell_index = argsort_actions[: np.where(actions < 0)[0].shape[0]]
             buy_index = argsort_actions[::-1][: np.where(actions > 0)[0].shape[0]]
 
             for index in sell_index:
-                # print(f"Num shares before: {self.state[index+self.stock_dim+1]}")
-                # print(f'take sell action before : {actions[index]}')
+                # Always buy ＆ sell in a pair
                 actions[index] = self._sell_stock(index, actions[index]) * (-1)
-                # print(f'take sell action after : {actions[index]}')
-                # print(f"Num shares after: {self.state[index+self.stock_dim+1]}")
+                # if 1 is in sell, the buy 0, vice versa
+                actions[1-index] = self._buy_stock(1-index, self.state[index+1]/self.state[2-index]*actions[index])
 
             for index in buy_index:
-                # print('take buy action: {}'.format(actions[index]))
+                # Always buy & sell in a pair
                 actions[index] = self._buy_stock(index, actions[index])
+                # if 1 is in buy, then sell 0, vice versa
+                actions[1-index] = self._sell_stock(1-index, self.state[index+1]/self.state[2-index]*actions[index]) * (-1)
 
             self.actions_memory.append(actions)
 
