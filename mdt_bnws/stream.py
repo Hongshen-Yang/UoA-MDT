@@ -56,11 +56,7 @@ def client_stream(itvl='1s'):
     # my_client.book_ticker(symbol="btcusdt")
     # my_client.diff_book_depth(symbol="btcusdt", speed=1000)
     # my_client.rolling_window_ticker("BNBUSDT", "1h")
-<<<<<<< HEAD
     my_client.kline(symbol="btcusdt", interval=itvl)
-=======
-    my_client.kline(symbol="btcusdt", interval="1s")
->>>>>>> d25214eb98ef15a456e4e14c93106a01f6411c75
     # my_client.trade(symbol="btcusdt")
     # my_client.ticker(symbol="btcusdt")
 
