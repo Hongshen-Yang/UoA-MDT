@@ -1,6 +1,6 @@
 import asyncio, sqlite3
-from mdt_utils import get_api_key
-from mdt_bnws import client_stream, client_api
+# from mdt_utils import get_api_key
+from mdt_bnws import WebSocketStreamClient
 
 async def clear_db():
     # Connect to SQLite database
@@ -12,9 +12,10 @@ async def clear_db():
     conn.close()
 
 async def main():
-    api_key, api_secret = get_api_key()
+    # api_key, api_secret = get_api_key()
+    stream_client = WebSocketStreamClient(itvl='1s', mode='testnet')
     await clear_db()
-    client_stream(itvl='1s')
+    stream_client.start_stream()
 
 if __name__ == "__main__":
     asyncio.run(main())
