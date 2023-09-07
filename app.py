@@ -1,6 +1,6 @@
 import asyncio, sqlite3
 from mdt_utils import get_api_key
-from mdt_bnws import client_stream, client_api
+from mdt_bnws import WebsocketStreamClient, WebsocketAPIClient
 
 async def clear_db():
     # Connect to SQLite database
@@ -11,10 +11,15 @@ async def clear_db():
     conn.commit()
     conn.close()
 
-async def main():
+async def main(symbol='BTCUSDT', itvl='1s', mode='testnet'):
     api_key, api_secret = get_api_key()
+
+    stream_client = WebsocketStreamClient(symbol=symbol, itvl=itvl, mode=mode)
     await clear_db()
-    client_stream(itvl='1s')
+    stream_client.start_stream()
+
+    api_client = WebsocketAPIClient(api_key, api_secret, symbol=symbol, itvl=itvl, mode=mode)
+    api_client.start()
 
 if __name__ == "__main__":
     asyncio.run(main())
