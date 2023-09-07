@@ -1,6 +1,5 @@
 binance-connector
 ipyparallel
-plotly==5.16.1
 box2d-py 
 box2d 
 Box2D
