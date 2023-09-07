@@ -1,6 +1,6 @@
 # Binance Websocket
 
-from .stream import WebSocketStreamClient
-from .api import client_api
+from .stream import WebsocketStreamClient
+from .api import WebsocketAPIClient
 
-__all__ = ['WebsocketStreamClient', 'client_api']
+__all__ = ['WebsocketStreamClient', 'WebsocketAPIClient']
