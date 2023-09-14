@@ -5,20 +5,20 @@ from binance.lib.utils import config_logging
 from binance.websocket.spot.websocket_stream import SpotWebsocketStreamClient
 import matplotlib.pyplot as plt
 
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
 
 class WebsocketStreamClient:
-    def __init__(self, symbol, itvl='1s',  mode='mainnet'):
+    def __init__(self, symbol, itvl='1s',  mode='testnet'):
         self.itvl = itvl
         self.mode = mode
         self.symbol = symbol
         self.stream_url = self.get_stream_url()
         # Initialize empty data lists
-        self.plot_x = []
-        self.plot_y = []
+        # self.plot_x = []
+        # self.plot_y = []
 
         # Create a Matplotlib figure and axis
-        self.fig, self.ax = plt.subplots()
+        # self.fig, self.ax = plt.subplots()
         
         config_logging(logging, logging.DEBUG)
 
@@ -28,32 +28,32 @@ class WebsocketStreamClient:
         if self.mode == 'testnet':
             return "wss://testnet.binance.vision"
         elif self.mode == 'mainnet':
-            return "wss://stream.binance.com:9443"
+            return "wss://stream.binance.com:443"
     
     def on_close(self, _):
         self.conn.close()
         logging.info("Connection is closed")
     
-    def update_chart(self, kline_data):
-        self.plot_x.append(datetime.datetime.fromtimestamp(kline_data['t']/1000.0))
-        self.plot_y.append(float(kline_data['c']))
+    # def update_chart(self, kline_data):
+    #     self.plot_x.append(datetime.datetime.fromtimestamp(kline_data['t']/1000.0))
+    #     self.plot_y.append(float(kline_data['c']))
 
-        self.ax.clear()
-        self.ax.plot(self.plot_x, self.plot_y, label='Closing Price')
+    #     self.ax.clear()
+    #     self.ax.plot(self.plot_x, self.plot_y, label='Closing Price')
     
-        self.ax.set_xlabel('Time')
-        self.ax.set_ylabel('Closing Price')
-        self.ax.legend()
-        # TODO: tilt the axis 45 degree, and show the time in HH:MM:SS format, not in scientific notation
+    #     self.ax.set_xlabel('Time')
+    #     self.ax.set_ylabel('Closing Price')
+    #     self.ax.legend()
+    #     # TODO: tilt the axis 45 degree, and show the time in HH:MM:SS format, not in scientific notation
 
-        plt.show()
+    #     plt.show()
     
     def message_handler(self, _, message):
         mes = json.loads(message)
         
         if 'k' in mes and mes['k']['x']:
             self.insert_kline_data(mes['k'])
-            self.update_chart(mes['k'])
+            # self.update_chart(mes['k'])
         else:
             logging.info(mes)
     
@@ -90,7 +90,7 @@ class WebsocketStreamClient:
         # my_client.ticker(symbol="btcusdt")
 
         # Keep the Matplotlib code in the main thread
-        plt.show()  # Display the Matplotlib chart
+        # plt.show()  # Display the Matplotlib chart
 
 if __name__ == "__main__":
     client = WebsocketStreamClient(symbol='BTCUSDT')
