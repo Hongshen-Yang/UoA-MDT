@@ -11,15 +11,12 @@ async def clear_db():
     conn.commit()
     conn.close()
 
-async def main(symbol='BTCUSDT', itvl='1s', mode='mainnet'):
+async def main(symbol='BTCUSDT', itvl='1s', mode='mainnet'symbol='BTCUSDT', itvl='1s', mode='testnet'):
     api_key, api_secret = get_api_key()
 
     stream_client = WebsocketStreamClient(symbol=symbol, itvl=itvl, mode=mode)
     await clear_db()
-    stream_client.start_stream()
-
-    # api_client = WebsocketAPIClient(api_key, api_secret, symbol=symbol, itvl=itvl, mode=mode)
-    # api_client.start()
+    client_stream(itvl='1s')
 
 if __name__ == "__main__":
     asyncio.run(main())
