@@ -11,7 +11,7 @@ async def clear_db():
     conn.commit()
     conn.close()
 
-async def main(symbol='BTCUSDT', itvl='1s', mode='mainnet'symbol='BTCUSDT', itvl='1s', mode='testnet'):
+async def main(symbol='BTCUSDT', itvl='1s', mode='testnet'):
     api_key, api_secret = get_api_key()
 
     stream_client = WebsocketStreamClient(symbol=symbol, itvl=itvl, mode=mode)
